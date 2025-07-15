@@ -9,6 +9,7 @@ import { sampleBrands } from './data/sampleBrands';
 import { BrandFilters, PaginationInfo } from './types/Brand';
 
 function App() {
+  // Always use sample data for display
   const brands = sampleBrands;
   
   const [filters, setFilters] = useState<BrandFilters>({
@@ -94,9 +95,7 @@ function App() {
   };
 
   const handleBrandAdded = () => {
-    // In a real app, you'd refresh the data from Supabase here
-    // For now, we'll just show a success message
-    alert('Brand added successfully! Note: You\'ll need to refresh to see it in the sample data.');
+    alert('Brand added successfully to your Supabase database!');
   };
 
   // Reset to first page when filters change

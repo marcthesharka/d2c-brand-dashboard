@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { X, Plus, Minus, Save, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 interface AddBrandFormProps {
   isOpen: boolean;
@@ -65,6 +64,18 @@ const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess 
     setLoading(true);
 
     try {
+      // Check if Supabase is configured
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseKey) {
+        alert('Supabase is not configured. Please add your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
+        return;
+      }
+
+      // Dynamic import of supabase client
+      const { supabase } = await import('../lib/supabase');
+      
       // Filter out empty strings from arrays
       const cleanedData = {
         name: formData.name,
