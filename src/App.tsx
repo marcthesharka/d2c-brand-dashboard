@@ -231,9 +231,7 @@ const App: React.FC = () => {
                   <div className="min-w-0 flex-1 max-w-xs">Brand</div>
                   <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Category</div>
                   <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2">Price</div>
-                  <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2 text-xs font-medium text-gray-500 uppercase tracking-wide text-center">
-                    Year Established
-                  </div>
+                  <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2 text-center">Year Established</div>
                   <div className="min-w-0 flex-1 max-w-xs px-2 text-center">Hot Score</div>
                   <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Social</div>
                   <div className="w-24">Actions</div>
@@ -243,32 +241,11 @@ const App: React.FC = () => {
               {/* Brand List */}
               <div className="divide-y divide-gray-200">
                 {paginatedBrands.map((brand) => (
-                  <div className="flex items-center text-sm">
-                    {/* Logo - Very Small */}
-                    <div className="w-8 h-8 flex-shrink-0 mr-3">
-                      <img 
-                        src={brand.logoUrl} 
-                        alt={`${brand.name} logo`}
-                        className="w-full h-full object-cover rounded border border-gray-200"
-                      />
-                    </div>
-                    {/* Brand Name & New Badge */}
-                    <div className="min-w-0 flex-1 max-w-xs">{brand.name}</div>
-                    <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">{brand.category}</div>
-                    <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2">{brand.pricePoint}</div>
-                    {/* Year Established - Centered */}
-                    <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2 text-xs text-gray-500 text-center">
-                      {brand.launchYear}
-                    </div>
-                    {/* Hot Score - Centered */}
-                    <div className="min-w-0 flex-1 max-w-xs px-2 text-center">
-                      <div className="flex items-center space-x-1 justify-center">
-                        <span>{brand.analytics ? brand.analytics.hotScore.toFixed(0) : '--'}</span>
-                      </div>
-                    </div>
-                    <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Social</div>
-                    <div className="w-24">Actions</div>
-                  </div>
+                  <BrandCard 
+                    key={brand.id} 
+                    brand={brand} 
+                    onWebsiteClick={handleWebsiteClick}
+                  />
                 ))}
               </div>
             </div>
