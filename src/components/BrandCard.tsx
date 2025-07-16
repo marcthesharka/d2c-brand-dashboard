@@ -180,7 +180,7 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
                 <div><span className="font-medium text-gray-700">Demographics:</span> {brand.targetAudience.demographics}</div>
                 <div><span className="font-medium text-gray-700">Lifestyle:</span> {brand.targetAudience.lifestyle}</div>
                 <div><span className="font-medium text-gray-700">Values:</span> {brand.targetAudience.values}</div>
-                <div><span className="font-medium text-gray-700">Pain Points:</span> {brand.targetAudience.painPoints.join(', ')}</div>
+                <div><span className="font-medium text-gray-700">Nutshell:</span> {brand.targetAudience.nutshell}</div>
               </div>
             </div>
           </div>
