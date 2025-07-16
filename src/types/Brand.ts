@@ -19,7 +19,7 @@ export interface Brand {
     demographics: string;
     lifestyle: string;
     values: string;
-    painPoints: string[];
+    nutshell: string;
   };
   createdAt: string;
   updatedAt: string;

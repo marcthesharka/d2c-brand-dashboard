@@ -21,7 +21,7 @@ export interface CreateBrandData {
     demographics: string;
     lifestyle: string;
     values: string;
-    painPoints: string[];
+    nutshell: string;
   };
 }
 
