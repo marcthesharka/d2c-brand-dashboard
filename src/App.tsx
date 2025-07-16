@@ -1,57 +1,75 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
-import FilterBar from './components/FilterBar';
+import FilterBar, { FilterState } from './components/FilterBar';
 import BrandCard from './components/BrandCard';
 import Stats from './components/Stats';
 import Pagination from './components/Pagination';
 import AddBrandForm from './components/AddBrandForm';
+import { Brand, PaginationInfo } from './types/Brand';
 import { sampleBrands } from './data/sampleBrands';
-import { BrandFilters, PaginationInfo } from './types/Brand';
 import { analyticsService } from './services/analyticsService';
 
+const ITEMS_PER_PAGE = 20;
+
 function App() {
-  // Always use sample data for display
-  const [brands, setBrands] = useState(() => {
-    // Initialize analytics data for sample brands
-    analyticsService.initializeSampleData(sampleBrands);
-    
-    // Merge sample brands with analytics data
-    return sampleBrands.map(brand => ({
-      ...brand,
-      analytics: analyticsService.getBrandAnalytics(brand.id) || undefined
-    }));
-  });
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   
-  const [filters, setFilters] = useState<BrandFilters>({
+  const [filters, setFilters] = useState<FilterState>({
     search: '',
-    category: 'All',
-    pricePoint: 'All',
-    launchYear: 'All',
-    rating: 0,
-    sortBy: 'hot',
+    category: '',
+    pricePoint: '',
+    minRating: 0,
+    sortBy: 'hotScore',
     sortOrder: 'desc'
   });
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
-  const [showAddForm, setShowAddForm] = useState(false);
+  // Load sample data and initialize analytics
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Use sample data
+        const brandsWithAnalytics = sampleBrands.map(brand => ({
+          ...brand,
+          analytics: analyticsService.getBrandAnalytics(brand.id) || 
+                    analyticsService.generateSampleAnalytics(brand.id, brand.socialMedia.instagram)
+        }));
+        
+        // Initialize analytics for all brands
+        analyticsService.initializeSampleData(brandsWithAnalytics);
+        
+        setBrands(brandsWithAnalytics);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setBrands(sampleBrands);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredAndSortedBrands = useMemo(() => {
-    let filtered = brands.filter((brand) => {
-      const matchesSearch = brand.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-                           brand.description.toLowerCase().includes(filters.search.toLowerCase()) ||
-                           brand.ingredients.some(ingredient => 
-                             ingredient.toLowerCase().includes(filters.search.toLowerCase())
-                           );
-      const matchesCategory = filters.category === 'All' || brand.category === filters.category;
-      const matchesPricePoint = filters.pricePoint === 'All' || brand.pricePoint === filters.pricePoint;
-      const matchesLaunchYear = filters.launchYear === 'All' || brand.launchYear.toString() === filters.launchYear;
-      const matchesRating = brand.rating >= filters.rating;
+    loadData();
+  }, []);
+
+  // Filter and sort brands
+  const filteredBrands = useMemo(() => {
+    let filtered = brands.filter(brand => {
+      const matchesSearch = !filters.search || 
+        brand.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+        brand.description.toLowerCase().includes(filters.search.toLowerCase()) ||
+        brand.ingredients.some(ingredient => 
+          ingredient.toLowerCase().includes(filters.search.toLowerCase())
+        );
       
-      return matchesSearch && matchesCategory && matchesPricePoint && matchesLaunchYear && matchesRating;
+      const matchesCategory = !filters.category || brand.category === filters.category;
+      const matchesPricePoint = !filters.pricePoint || brand.pricePoint === filters.pricePoint;
+      const matchesRating = brand.rating >= filters.minRating;
+      
+      return matchesSearch && matchesCategory && matchesPricePoint && matchesRating;
     });
 
-    // Sort the filtered results
+    // Sort brands
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
       
@@ -60,54 +78,47 @@ function App() {
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
           break;
-        case 'rating':
-          aValue = a.rating;
-          bValue = b.rating;
+        case 'hotScore':
+          aValue = a.analytics?.hotScore || 0;
+          bValue = b.analytics?.hotScore || 0;
           break;
         case 'launchYear':
           aValue = a.launchYear;
           bValue = b.launchYear;
           break;
         case 'followers':
-          aValue = a.socialMedia.instagram + a.socialMedia.twitter;
-          bValue = b.socialMedia.instagram + b.socialMedia.twitter;
-          break;
-        case 'hot':
-          aValue = a.analytics?.hotScore || 0;
-          bValue = b.analytics?.hotScore || 0;
+          aValue = a.socialMedia.instagram;
+          bValue = b.socialMedia.instagram;
           break;
         default:
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
+          aValue = a.analytics?.hotScore || 0;
+          bValue = b.analytics?.hotScore || 0;
       }
       
       if (filters.sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        return aValue > bValue ? 1 : -1;
       } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+        return aValue < bValue ? 1 : -1;
       }
     });
 
     return filtered;
-  }, [filters, brands]);
+  }, [brands, filters]);
 
+  // Pagination
   const paginatedBrands = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredAndSortedBrands.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredAndSortedBrands, currentPage, itemsPerPage]);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredBrands.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredBrands, currentPage]);
 
-  const paginationInfo: PaginationInfo = {
+  const pagination: PaginationInfo = {
     currentPage,
-    totalPages: Math.ceil(filteredAndSortedBrands.length / itemsPerPage),
-    totalItems: filteredAndSortedBrands.length,
-    itemsPerPage
+    totalPages: Math.ceil(filteredBrands.length / ITEMS_PER_PAGE),
+    totalItems: filteredBrands.length,
+    itemsPerPage: ITEMS_PER_PAGE
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
+  // Handle website click tracking
   const handleWebsiteClick = (brandId: string) => {
     analyticsService.trackWebsiteClick(brandId);
     
@@ -115,60 +126,115 @@ function App() {
     setBrands(prevBrands => 
       prevBrands.map(brand => 
         brand.id === brandId 
-          ? { ...brand, analytics: analyticsService.getBrandAnalytics(brandId) || undefined }
+          ? { ...brand, analytics: analyticsService.getBrandAnalytics(brandId) }
           : brand
       )
     );
   };
-  const handleBrandAdded = () => {
-    alert('Brand added successfully to your Supabase database!');
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Reset to first page when filters change
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
+  // Handle filter changes
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  // Handle successful brand addition
+  const handleBrandAdded = () => {
+    // In a real app, this would refetch from the database
+    // For now, we'll just close the form
+    setShowAddForm(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading brands...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header
+      <Header 
         totalBrands={brands.length}
-        filteredCount={filteredAndSortedBrands.length}
+        filteredCount={filteredBrands.length}
         onAddBrand={() => setShowAddForm(true)}
       />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Stats brands={brands} filteredBrands={filteredAndSortedBrands} />
+      <main className="max-w-7xl mx-auto">
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
+          <Stats brands={brands} filteredBrands={filteredBrands} />
+        </div>
         
-        <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden">
-          <FilterBar filters={filters} setFilters={setFilters} />
+        <FilterBar
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          totalBrands={brands.length}
+          filteredCount={filteredBrands.length}
+        />
+        
+        {/* Brands List */}
+        <div className="bg-white shadow-sm">
+          {/* Table Header */}
+          <div className="hidden lg:flex items-center px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <div className="w-8 mr-3"></div>
+            <div className="min-w-0 flex-1 max-w-xs">Brand</div>
+            <div className="min-w-0 flex-1 max-w-xs px-2">Category</div>
+            <div className="min-w-0 flex-1 max-w-xs px-2">Price</div>
+            <div className="min-w-0 flex-1 max-w-xs px-2">Year</div>
+            <div className="min-w-0 flex-1 max-w-xs px-2">Hot Score</div>
+            <div className="min-w-0 flex-1 max-w-xs px-2">Social</div>
+            <div className="ml-2">Actions</div>
+          </div>
           
-          {paginatedBrands.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No brands found matching your criteria.</p>
-              <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {paginatedBrands.map((brand) => (
-                <BrandCard 
-                  key={brand.id} 
-                  brand={brand} 
+          {/* Brands */}
+          <div className="divide-y divide-gray-200">
+            {paginatedBrands.length > 0 ? (
+              paginatedBrands.map((brand) => (
+                <BrandCard
+                  key={brand.id}
+                  brand={brand}
                   onWebsiteClick={handleWebsiteClick}
                 />
-              ))}
-            </div>
-          )}
-          
-          {paginatedBrands.length > 0 && (
-            <Pagination
-              pagination={paginationInfo}
-              onPageChange={handlePageChange}
-            />
-          )}
+              ))
+            ) : (
+              <div className="px-4 py-12 text-center">
+                <p className="text-gray-500">No brands found matching your criteria.</p>
+                <button
+                  onClick={() => setFilters({
+                    search: '',
+                    category: '',
+                    pricePoint: '',
+                    minRating: 0,
+                    sortBy: 'hotScore',
+                    sortOrder: 'desc'
+                  })}
+                  className="mt-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
+                >
+                  Clear all filters
+                </button>
+              </div>
+            )}
+          </div>
         </div>
+        
+        {/* Pagination */}
+        <Pagination
+          pagination={pagination}
+          onPageChange={handlePageChange}
+        />
       </main>
-      
+
+      {/* Add Brand Form Modal */}
       <AddBrandForm
         isOpen={showAddForm}
         onClose={() => setShowAddForm(false)}

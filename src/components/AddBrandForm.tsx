@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Plus, Minus, Save, Loader2 } from 'lucide-react';
+import { X, Plus, Minus } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface AddBrandFormProps {
   isOpen: boolean;
@@ -8,29 +9,29 @@ interface AddBrandFormProps {
 }
 
 const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    category: 'Food' as const,
-    price_point: 'Mid' as const,
-    launch_year: new Date().getFullYear(),
+    category: 'Food',
+    pricePoint: 'Mid',
+    launchYear: new Date().getFullYear(),
     website: '',
-    instagram_followers: 0,
-    twitter_followers: 0,
+    instagramFollowers: 0,
+    instagramHandle: '',
     rating: 4.0,
-    logo_url: '',
+    logoUrl: '',
     ingredients: [''],
     influencers: [''],
-    retail_stores: [''],
-    demographics: '',
-    lifestyle: '',
-    values: '',
-    pain_points: ['']
+    retailStores: [''],
+    targetAudience: {
+      demographics: '',
+      lifestyle: '',
+      values: '',
+      painPoints: ['']
+    }
   });
 
-  const categories = ['Food', 'Beverages', 'Snacks', 'Supplements', 'Condiments', 'Desserts'];
-  const pricePoints = ['Low', 'Mid', 'Premium'];
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -59,95 +60,101 @@ const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess 
     }));
   };
 
+  const handleTargetAudienceChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      targetAudience: {
+        ...prev.targetAudience,
+        [field]: value
+      }
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    
+    if (!supabase) {
+      alert('Supabase is not configured. Please set up your environment variables.');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      // Check if Supabase is configured
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (!supabaseUrl || !supabaseKey) {
-        alert('Supabase is not configured. Please add your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY environment variables.');
-        return;
-      }
-
-      // Dynamic import of supabase client
-      const { supabase } = await import('../lib/supabase');
-      
-      // Filter out empty strings from arrays
+      // Clean up arrays (remove empty strings)
       const cleanedData = {
-        name: formData.name,
-        description: formData.description,
-        category: formData.category,
-        price_point: formData.price_point,
-        launch_year: formData.launch_year,
-        website: formData.website,
-        social_media: {
-          instagram: formData.instagram_followers,
-          twitter: formData.twitter_followers
-        },
-        rating: formData.rating,
-        logo_url: formData.logo_url,
+        ...formData,
         ingredients: formData.ingredients.filter(item => item.trim() !== ''),
         influencers: formData.influencers.filter(item => item.trim() !== ''),
-        retail_stores: formData.retail_stores.filter(item => item.trim() !== ''),
+        retail_stores: formData.retailStores.filter(item => item.trim() !== ''),
+        social_media: {
+          instagram: formData.instagramFollowers
+        },
+        instagram_handle: formData.instagramHandle,
+        logo_url: formData.logoUrl,
+        launch_year: formData.launchYear,
+        price_point: formData.pricePoint,
         target_audience: {
-          demographics: formData.demographics,
-          lifestyle: formData.lifestyle,
-          values: formData.values,
-          painPoints: formData.pain_points.filter(item => item.trim() !== '')
+          ...formData.targetAudience,
+          painPoints: formData.targetAudience.painPoints.filter(item => item.trim() !== '')
         }
       };
 
+      // Remove form-specific fields
+      const { instagramFollowers, instagramHandle, logoUrl, retailStores, ...dbData } = cleanedData;
+
       const { error } = await supabase
         .from('brands')
-        .insert([cleanedData]);
+        .insert([dbData]);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
+      onSuccess();
+      onClose();
+      
       // Reset form
       setFormData({
         name: '',
         description: '',
         category: 'Food',
-        price_point: 'Mid',
-        launch_year: new Date().getFullYear(),
+        pricePoint: 'Mid',
+        launchYear: new Date().getFullYear(),
         website: '',
-        instagram_followers: 0,
-        twitter_followers: 0,
+        instagramFollowers: 0,
+        instagramHandle: '',
         rating: 4.0,
-        logo_url: '',
+        logoUrl: '',
         ingredients: [''],
         influencers: [''],
-        retail_stores: [''],
-        demographics: '',
-        lifestyle: '',
-        values: '',
-        pain_points: ['']
+        retailStores: [''],
+        targetAudience: {
+          demographics: '',
+          lifestyle: '',
+          values: '',
+          painPoints: ['']
+        }
       });
 
-      onSuccess();
-      onClose();
     } catch (error) {
       console.error('Error adding brand:', error);
-      alert('Error adding brand. Please try again.');
+      alert('Failed to add brand. Please try again.');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Add New Brand</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
@@ -188,14 +195,16 @@ const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess 
                 Category *
               </label>
               <select
-                required
                 value={formData.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
+                <option value="Food">Food</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Snacks">Snacks</option>
+                <option value="Supplements">Supplements</option>
+                <option value="Condiments">Condiments</option>
+                <option value="Desserts">Desserts</option>
               </select>
             </div>
 
@@ -204,14 +213,13 @@ const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess 
                 Price Point *
               </label>
               <select
-                required
-                value={formData.price_point}
-                onChange={(e) => handleInputChange('price_point', e.target.value)}
+                value={formData.pricePoint}
+                onChange={(e) => handleInputChange('pricePoint', e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               >
-                {pricePoints.map(price => (
-                  <option key={price} value={price}>{price}</option>
-                ))}
+                <option value="Low">Low</option>
+                <option value="Mid">Mid</option>
+                <option value="Premium">Premium</option>
               </select>
             </div>
 
@@ -224,15 +232,15 @@ const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess 
                 required
                 min="1900"
                 max={new Date().getFullYear() + 5}
-                value={formData.launch_year}
-                onChange={(e) => handleInputChange('launch_year', parseInt(e.target.value))}
+                value={formData.launchYear}
+                onChange={(e) => handleInputChange('launchYear', parseInt(e.target.value))}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Rating (0-5) *
+                Rating *
               </label>
               <input
                 type="number"
@@ -270,8 +278,8 @@ const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess 
               type="url"
               required
               placeholder="https://example.com/logo.jpg"
-              value={formData.logo_url}
-              onChange={(e) => handleInputChange('logo_url', e.target.value)}
+              value={formData.logoUrl}
+              onChange={(e) => handleInputChange('logoUrl', e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
@@ -280,26 +288,28 @@ const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Instagram Followers
+                Instagram Followers *
               </label>
               <input
                 type="number"
+                required
                 min="0"
-                value={formData.instagram_followers}
-                onChange={(e) => handleInputChange('instagram_followers', parseInt(e.target.value) || 0)}
+                value={formData.instagramFollowers}
+                onChange={(e) => handleInputChange('instagramFollowers', parseInt(e.target.value) || 0)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Twitter Followers
+                Instagram Handle *
               </label>
               <input
-                type="number"
-                min="0"
-                value={formData.twitter_followers}
-                onChange={(e) => handleInputChange('twitter_followers', parseInt(e.target.value) || 0)}
+                type="text"
+                required
+                placeholder="brandname"
+                value={formData.instagramHandle}
+                onChange={(e) => handleInputChange('instagramHandle', e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
@@ -307,115 +317,148 @@ const AddBrandForm: React.FC<AddBrandFormProps> = ({ isOpen, onClose, onSuccess 
 
           {/* Dynamic Arrays */}
           {[
-            { field: 'ingredients', label: 'Ingredients', required: true },
-            { field: 'influencers', label: 'Influencer Partners', required: false },
-            { field: 'retail_stores', label: 'Retail Stores', required: false },
-            { field: 'pain_points', label: 'Target Audience Pain Points', required: false }
-          ].map(({ field, label, required }) => (
+            { field: 'ingredients', label: 'Ingredients' },
+            { field: 'influencers', label: 'Influencer Partners' },
+            { field: 'retailStores', label: 'Retail Stores' }
+          ].map(({ field, label }) => (
             <div key={field}>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {label} {required && '*'}
+                {label}
               </label>
-              <div className="space-y-2">
-                {formData[field as keyof typeof formData].map((item: string, index: number) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <input
-                      type="text"
-                      value={item}
-                      onChange={(e) => handleArrayChange(field, index, e.target.value)}
-                      className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                      placeholder={`Enter ${label.toLowerCase().slice(0, -1)}`}
-                    />
-                    {formData[field as keyof typeof formData].length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeArrayItem(field, index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => addArrayItem(field)}
-                  className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700 text-sm"
-                >
-                  <Plus className="h-4 w-4" />
-                  <span>Add {label.slice(0, -1)}</span>
-                </button>
-              </div>
+              {formData[field as keyof typeof formData].map((item: string, index: number) => (
+                <div key={index} className="flex items-center space-x-2 mb-2">
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={(e) => handleArrayChange(field, index, e.target.value)}
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder={`Enter ${label.toLowerCase().slice(0, -1)}`}
+                  />
+                  {formData[field as keyof typeof formData].length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeArrayItem(field, index)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => addArrayItem(field)}
+                className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700 text-sm"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add {label.slice(0, -1)}</span>
+              </button>
             </div>
           ))}
 
           {/* Target Audience */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Demographics
-              </label>
-              <textarea
-                rows={3}
-                value={formData.demographics}
-                onChange={(e) => handleInputChange('demographics', e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Age, gender, income level..."
-              />
-            </div>
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-gray-900">Target Audience</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Demographics
+                </label>
+                <input
+                  type="text"
+                  value={formData.targetAudience.demographics}
+                  onChange={(e) => handleTargetAudienceChange('demographics', e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="e.g., Health-conscious millennials, ages 25-40"
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Lifestyle
-              </label>
-              <textarea
-                rows={3}
-                value={formData.lifestyle}
-                onChange={(e) => handleInputChange('lifestyle', e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Busy professionals, fitness enthusiasts..."
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Lifestyle
+                </label>
+                <input
+                  type="text"
+                  value={formData.targetAudience.lifestyle}
+                  onChange={(e) => handleTargetAudienceChange('lifestyle', e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  placeholder="e.g., Busy professionals seeking convenience"
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Values
               </label>
-              <textarea
-                rows={3}
-                value={formData.values}
-                onChange={(e) => handleInputChange('values', e.target.value)}
+              <input
+                type="text"
+                value={formData.targetAudience.values}
+                onChange={(e) => handleTargetAudienceChange('values', e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Sustainability, health, quality..."
+                placeholder="e.g., Sustainability, clean eating, transparency"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Pain Points
+              </label>
+              {formData.targetAudience.painPoints.map((painPoint: string, index: number) => (
+                <div key={index} className="flex items-center space-x-2 mb-2">
+                  <input
+                    type="text"
+                    value={painPoint}
+                    onChange={(e) => handleTargetAudienceChange('painPoints', 
+                      formData.targetAudience.painPoints.map((item: string, i: number) => 
+                        i === index ? e.target.value : item
+                      )
+                    )}
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder="Enter pain point"
+                  />
+                  {formData.targetAudience.painPoints.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => handleTargetAudienceChange('painPoints',
+                        formData.targetAudience.painPoints.filter((_: string, i: number) => i !== index)
+                      )}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => handleTargetAudienceChange('painPoints', 
+                  [...formData.targetAudience.painPoints, '']
+                )}
+                className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700 text-sm"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Add Pain Point</span>
+              </button>
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+          {/* Submit Buttons */}
+          <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={loading}
-              className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 transition-colors"
+              disabled={isSubmitting}
+              className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-md hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Adding...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  <span>Add Brand</span>
-                </>
-              )}
+              {isSubmitting ? 'Adding...' : 'Add Brand'}
             </button>
           </div>
         </form>

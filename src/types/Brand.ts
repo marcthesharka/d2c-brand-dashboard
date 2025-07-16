@@ -8,8 +8,8 @@ export interface Brand {
   website: string;
   socialMedia: {
     instagram: number;
-    twitter: number;
   };
+  instagramHandle: string;
   influencers: string[];
   retailStores: string[];
   rating: number;
@@ -21,26 +21,17 @@ export interface Brand {
     values: string;
     painPoints: string[];
   };
-  isNew?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  analytics?: {
-    websiteClicks: number;
-    instagramFollowersLastWeek: number;
-    instagramGrowthWoW: number;
-    hotScore: number;
-    lastUpdated: string;
-  };
+  createdAt: string;
+  updatedAt: string;
+  analytics?: AnalyticsData;
 }
 
-export interface BrandFilters {
-  search: string;
-  category: string;
-  pricePoint: string;
-  launchYear: string;
-  rating: number;
-  sortBy: 'name' | 'rating' | 'launchYear' | 'followers' | 'hot';
-  sortOrder: 'asc' | 'desc';
+export interface AnalyticsData {
+  websiteClicks: number;
+  instagramFollowersLastWeek: number;
+  instagramGrowthWoW: number;
+  hotScore: number;
+  lastUpdated: string;
 }
 
 export interface PaginationInfo {
@@ -48,4 +39,13 @@ export interface PaginationInfo {
   totalPages: number;
   totalItems: number;
   itemsPerPage: number;
+}
+
+export interface FilterState {
+  search: string;
+  category: string;
+  pricePoint: string;
+  minRating: number;
+  sortBy: 'name' | 'hotScore' | 'launchYear' | 'followers';
+  sortOrder: 'asc' | 'desc';
 }

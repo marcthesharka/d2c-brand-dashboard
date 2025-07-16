@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Users, Instagram, Twitter, Store, ExternalLink, ChevronDown, ChevronUp, Leaf, Flame, TrendingUp } from 'lucide-react';
+import { Star, Users, Instagram, Store, ExternalLink, ChevronDown, ChevronUp, Leaf, Flame, TrendingUp } from 'lucide-react';
 import { Brand } from '../types/Brand';
 
 interface BrandCardProps {
@@ -43,6 +43,14 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
     }
     window.open(`https://${brand.website}`, '_blank', 'noopener,noreferrer');
   };
+
+  // Calculate if brand is new (within past 30 days)
+  const isNewBrand = () => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return new Date(brand.createdAt) > thirtyDaysAgo;
+  };
+
   return (
     <div className="bg-white hover:bg-gray-50 transition-colors duration-150">
       {/* Compact Main Row */}
@@ -60,7 +68,7 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
         <div className="min-w-0 flex-1 max-w-xs">
           <div className="flex items-center space-x-2">
             <h3 className="font-medium text-gray-900 truncate text-sm">{brand.name}</h3>
-            {brand.isNew && (
+            {isNewBrand() && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
                 New
               </span>
@@ -93,26 +101,18 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
           {brand.launchYear}
         </div>
         
-        {/* Rating */}
+        {/* Hot Score */}
         <div className="min-w-0 flex-1 max-w-xs px-2">
           <div className="flex items-center space-x-1">
-            <Star className="h-3 w-3 text-yellow-400 fill-current" />
-            <span className="text-xs font-medium text-gray-700">{brand.rating}</span>
+            <Flame className="h-3 w-3 text-red-500" />
+            <span className="text-xs font-medium text-gray-700">
+              {brand.analytics ? brand.analytics.hotScore.toFixed(0) : '--'}
+            </span>
           </div>
         </div>
         
-        {/* Hot Score */}
-        {brand.analytics && (
-          <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2">
-            <div className="flex items-center space-x-1">
-              <Flame className="h-3 w-3 text-red-500" />
-              <span className="text-xs font-medium text-gray-700">{brand.analytics.hotScore.toFixed(0)}</span>
-            </div>
-          </div>
-        )}
-        
         {/* Social Metrics */}
-        <div className="hidden sm:flex min-w-0 flex-1 max-w-xs px-2 items-center space-x-3 text-xs text-gray-500">
+        <div className="hidden sm:flex min-w-0 flex-1 max-w-xs px-2 items-center space-x-2 text-xs text-gray-500">
           <div className="flex items-center space-x-1">
             <Instagram className="h-3 w-3" />
             <span>{formatFollowers(brand.socialMedia.instagram)}</span>
@@ -120,9 +120,8 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
               <TrendingUp className="h-2.5 w-2.5 text-green-500" />
             )}
           </div>
-          <div className="flex items-center space-x-1">
-            <Twitter className="h-3 w-3" />
-            <span>{formatFollowers(brand.socialMedia.twitter)}</span>
+          <div className="text-gray-400">
+            @{brand.instagramHandle}
           </div>
         </div>
         
@@ -191,9 +190,16 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
             <div className="mt-3 pt-3 border-t border-gray-200">
               <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
                 <Flame className="h-3 w-3 mr-1 text-red-600" />
-                Hot Score Analytics
+                Analytics
               </h4>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+                <div className="bg-white p-2 rounded border">
+                  <div className="text-gray-500">Rating</div>
+                  <div className="font-medium text-gray-900 flex items-center">
+                    <Star className="h-3 w-3 text-yellow-400 fill-current mr-1" />
+                    {brand.rating}
+                  </div>
+                </div>
                 <div className="bg-white p-2 rounded border">
                   <div className="text-gray-500">Website Clicks</div>
                   <div className="font-medium text-gray-900">{brand.analytics.websiteClicks.toLocaleString()}</div>
