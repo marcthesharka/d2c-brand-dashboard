@@ -40,7 +40,7 @@ export class BrandService {
       throw new Error(`Failed to fetch brands: ${error.message}`);
     }
 
-    return data.map(this.transformFromDatabase);
+    return data.map((row: any) => this.transformFromDatabase(row));
   }
 
   async createBrand(brandData: CreateBrandData): Promise<Brand> {
