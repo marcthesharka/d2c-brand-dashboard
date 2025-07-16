@@ -38,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({ totalBrands, filteredCount, onAddBrand 
       </div>
       {/* Elegant description below header */}
       <div className="w-full text-center mt-2 mb-4">
-        <p className="italic text-gray-600 text-base font-serif" style={{ fontFamily: 'Playfair Display, serif' }}>
+        <p className="italic text-gray-600 text-xl font-serif tracking-wide" style={{ fontFamily: 'Playfair Display, serif' }}>
           <span className="not-italic font-bold">Sana</span> (Latin for “healthy”) — Discover the brands that fuel a good life with the right nutrition.
         </p>
       </div>
