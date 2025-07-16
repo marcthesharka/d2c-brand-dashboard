@@ -6,14 +6,15 @@ import Stats from './components/Stats';
 import Pagination from './components/Pagination';
 import AddBrandForm from './components/AddBrandForm';
 import { Brand, PaginationInfo } from './types/Brand';
-import { sampleBrands } from './data/sampleBrands';
+import { brandService } from './services/brandService';
 import { analyticsService } from './services/analyticsService';
 
 const ITEMS_PER_PAGE = 20;
 
-function App() {
+const App: React.FC = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   
@@ -26,47 +27,55 @@ function App() {
     sortOrder: 'desc'
   });
 
-  // Load sample data and initialize analytics
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Use sample data
-        const brandsWithAnalytics = sampleBrands.map(brand => ({
-          ...brand,
-          analytics: analyticsService.getBrandAnalytics(brand.id) || 
-                    analyticsService.generateSampleAnalytics(brand.id, brand.socialMedia.instagram)
-        }));
-        
-        // Initialize analytics for all brands
-        analyticsService.initializeSampleData(brandsWithAnalytics);
-        
-        setBrands(brandsWithAnalytics);
-      } catch (error) {
-        console.error('Error loading data:', error);
-        setBrands(sampleBrands);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Load brands from Supabase
+  const loadBrands = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const brandsData = await brandService.getAllBrands();
+      
+      // Initialize analytics for demo purposes
+      analyticsService.initializeSampleData(brandsData);
+      
+      // Add analytics data to brands
+      const brandsWithAnalytics = brandsData.map(brand => ({
+        ...brand,
+        analytics: analyticsService.getBrandAnalytics(brand.id)
+      }));
+      
+      setBrands(brandsWithAnalytics);
+    } catch (err) {
+      console.error('Error loading brands:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load brands');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    loadData();
+  useEffect(() => {
+    loadBrands();
   }, []);
 
   // Filter and sort brands
   const filteredBrands = useMemo(() => {
     let filtered = brands.filter(brand => {
-      const matchesSearch = !filters.search || 
-        brand.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        brand.description.toLowerCase().includes(filters.search.toLowerCase()) ||
-        brand.ingredients.some(ingredient => 
-          ingredient.toLowerCase().includes(filters.search.toLowerCase())
-        );
+      // Search filter
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        const searchableText = `${brand.name} ${brand.description} ${brand.ingredients?.join(' ') || ''}`.toLowerCase();
+        if (!searchableText.includes(searchTerm)) return false;
+      }
       
-      const matchesCategory = !filters.category || brand.category === filters.category;
-      const matchesPricePoint = !filters.pricePoint || brand.pricePoint === filters.pricePoint;
-      const matchesRating = brand.rating >= filters.minRating;
+      // Category filter
+      if (filters.category && brand.category !== filters.category) return false;
       
-      return matchesSearch && matchesCategory && matchesPricePoint && matchesRating;
+      // Price point filter
+      if (filters.pricePoint && brand.pricePoint !== filters.pricePoint) return false;
+      
+      // Rating filter
+      if (filters.minRating > 0 && brand.rating < filters.minRating) return false;
+      
+      return true;
     });
 
     // Sort brands
@@ -91,8 +100,7 @@ function App() {
           bValue = b.socialMedia.instagram;
           break;
         default:
-          aValue = a.analytics?.hotScore || 0;
-          bValue = b.analytics?.hotScore || 0;
+          return 0;
       }
       
       if (filters.sortOrder === 'asc') {
@@ -121,42 +129,61 @@ function App() {
   // Handle website click tracking
   const handleWebsiteClick = (brandId: string) => {
     analyticsService.trackWebsiteClick(brandId);
-    
     // Update the brand's analytics in state
-    setBrands(prevBrands => 
-      prevBrands.map(brand => 
-        brand.id === brandId 
-          ? { ...brand, analytics: analyticsService.getBrandAnalytics(brandId) }
-          : brand
-      )
-    );
+    setBrands(prev => prev.map(brand => 
+      brand.id === brandId 
+        ? { ...brand, analytics: analyticsService.getBrandAnalytics(brandId) }
+        : brand
+    ));
   };
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Handle filter changes
-  const handleFiltersChange = (newFilters: FilterState) => {
-    setFilters(newFilters);
-    setCurrentPage(1); // Reset to first page when filters change
-  };
-
-  // Handle successful brand addition
+  // Handle brand added
   const handleBrandAdded = () => {
-    // In a real app, this would refetch from the database
-    // For now, we'll just close the form
+    loadBrands(); // Reload brands from database
     setShowAddForm(false);
   };
 
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading brands...</p>
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          totalBrands={0} 
+          filteredCount={0} 
+          onAddBrand={() => setShowAddForm(true)} 
+        />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading brands from database...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          totalBrands={0} 
+          filteredCount={0} 
+          onAddBrand={() => setShowAddForm(true)} 
+        />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Error loading brands: {error}</p>
+            <button 
+              onClick={loadBrands}
+              className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -165,83 +192,80 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
-        totalBrands={brands.length}
-        filteredCount={filteredBrands.length}
-        onAddBrand={() => setShowAddForm(true)}
+        totalBrands={brands.length} 
+        filteredCount={filteredBrands.length} 
+        onAddBrand={() => setShowAddForm(true)} 
       />
       
-      <main className="max-w-7xl mx-auto">
-        <div className="px-4 sm:px-6 lg:px-8 py-6">
-          <Stats brands={brands} filteredBrands={filteredBrands} />
-        </div>
+      <FilterBar
+        filters={filters}
+        onFiltersChange={setFilters}
+        totalBrands={brands.length}
+        filteredCount={filteredBrands.length}
+      />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Stats brands={brands} filteredBrands={filteredBrands} />
         
-        <FilterBar
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          totalBrands={brands.length}
-          filteredCount={filteredBrands.length}
-        />
-        
-        {/* Brands List */}
-        <div className="bg-white shadow-sm">
-          {/* Table Header */}
-          <div className="hidden lg:flex items-center px-4 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
-            <div className="w-8 mr-3"></div>
-            <div className="min-w-0 flex-1 max-w-xs">Brand</div>
-            <div className="min-w-0 flex-1 max-w-xs px-2">Category</div>
-            <div className="min-w-0 flex-1 max-w-xs px-2">Price</div>
-            <div className="min-w-0 flex-1 max-w-xs px-2">Year</div>
-            <div className="min-w-0 flex-1 max-w-xs px-2">Hot Score</div>
-            <div className="min-w-0 flex-1 max-w-xs px-2">Social</div>
-            <div className="ml-2">Actions</div>
-          </div>
-          
-          {/* Brands */}
-          <div className="divide-y divide-gray-200">
-            {paginatedBrands.length > 0 ? (
-              paginatedBrands.map((brand) => (
-                <BrandCard
-                  key={brand.id}
-                  brand={brand}
-                  onWebsiteClick={handleWebsiteClick}
-                />
-              ))
-            ) : (
-              <div className="px-4 py-12 text-center">
-                <p className="text-gray-500">No brands found matching your criteria.</p>
-                <button
-                  onClick={() => setFilters({
-                    search: '',
-                    category: '',
-                    pricePoint: '',
-                    minRating: 0,
-                    sortBy: 'hotScore',
-                    sortOrder: 'desc'
-                  })}
-                  className="mt-2 text-emerald-600 hover:text-emerald-700 text-sm font-medium"
-                >
-                  Clear all filters
-                </button>
-              </div>
+        {filteredBrands.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg mb-4">
+              {brands.length === 0 ? 'No brands found in database' : 'No brands match your current filters'}
+            </p>
+            {brands.length === 0 && (
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+              >
+                Add Your First Brand
+              </button>
             )}
           </div>
-        </div>
-        
-        {/* Pagination */}
-        <Pagination
-          pagination={pagination}
-          onPageChange={handlePageChange}
-        />
+        ) : (
+          <>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              {/* Table Header */}
+              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                <div className="flex items-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  <div className="w-8 mr-3"></div>
+                  <div className="min-w-0 flex-1 max-w-xs">Brand</div>
+                  <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Category</div>
+                  <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2">Price</div>
+                  <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2">Year</div>
+                  <div className="min-w-0 flex-1 max-w-xs px-2">Hot Score</div>
+                  <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Social</div>
+                  <div className="w-24">Actions</div>
+                </div>
+              </div>
+              
+              {/* Brand List */}
+              <div className="divide-y divide-gray-200">
+                {paginatedBrands.map((brand) => (
+                  <BrandCard 
+                    key={brand.id} 
+                    brand={brand} 
+                    onWebsiteClick={handleWebsiteClick}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            <Pagination 
+              pagination={pagination}
+              onPageChange={setCurrentPage}
+            />
+          </>
+        )}
       </main>
 
-      {/* Add Brand Form Modal */}
-      <AddBrandForm
-        isOpen={showAddForm}
-        onClose={() => setShowAddForm(false)}
-        onSuccess={handleBrandAdded}
-      />
+      {showAddForm && (
+        <AddBrandForm
+          onClose={() => setShowAddForm(false)}
+          onBrandAdded={handleBrandAdded}
+        />
+      )}
     </div>
   );
-}
+};
 
 export default App;
