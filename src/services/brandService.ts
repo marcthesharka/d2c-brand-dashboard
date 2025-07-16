@@ -114,7 +114,7 @@ export class BrandService {
       throw new Error(`Failed to search brands: ${error.message}`);
     }
 
-    return data.map(this.transformFromDatabase);
+    return data.map((row: any) => this.transformFromDatabase(row));
   }
 
   private transformFromDatabase(dbBrand: any): Brand {
