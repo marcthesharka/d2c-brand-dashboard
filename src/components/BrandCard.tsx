@@ -120,9 +120,14 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
               <TrendingUp className="h-2.5 w-2.5 text-green-500" />
             )}
           </div>
-          <div className="text-gray-400">
-            @{brand.instagramHandle}
-          </div>
+          <a
+            href={`https://instagram.com/${brand.instagramHandle.replace(/^@/, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+            @{brand.instagramHandle.replace(/^@/, '')}
+          </a>
         </div>
         
         {/* Actions */}
