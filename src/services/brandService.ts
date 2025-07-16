@@ -127,7 +127,7 @@ export class BrandService {
       launchYear: dbBrand.launch_year,
       website: dbBrand.website,
       socialMedia: dbBrand.social_media,
-      instagramHandle: this.extractInstagramHandle(dbBrand.social_media),
+      instagramHandle: dbBrand.instagram_handle || "",
       influencers: dbBrand.influencers || [],
       retailStores: dbBrand.retail_stores || [],
       rating: parseFloat(dbBrand.rating),
@@ -157,12 +157,6 @@ export class BrandService {
     if (brandData.targetAudience) dbData.target_audience = brandData.targetAudience;
 
     return dbData;
-  }
-
-  private extractInstagramHandle(socialMedia: any): string {
-    // Extract Instagram handle from social media data
-    // This is a placeholder - you might want to store handles separately
-    return `brand_${Math.random().toString(36).substr(2, 8)}`;
   }
 }
 
