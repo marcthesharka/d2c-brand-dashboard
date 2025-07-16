@@ -97,13 +97,13 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
         </div>
         
         {/* Launch Year */}
-        <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2 text-center">
+        <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2 flex justify-center items-center text-center">
           {brand.launchYear}
         </div>
         
         {/* Hot Score */}
-        <div className="min-w-0 flex-1 max-w-xs px-2 text-center">
-          <div className="flex items-center space-x-1">
+        <div className="min-w-0 flex-1 max-w-xs px-2 flex justify-center items-center text-center">
+          <div className="flex items-center space-x-1 justify-center">
             <Flame className="h-3 w-3 text-red-500" />
             <span className="text-xs font-medium text-gray-700">
               {brand.analytics ? brand.analytics.hotScore.toFixed(0) : '--'}
