@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Star, Users, Instagram, Twitter, Store, ExternalLink, ChevronDown, ChevronUp, Leaf } from 'lucide-react';
+import { Star, Users, Instagram, Twitter, Store, ExternalLink, ChevronDown, ChevronUp, Leaf, Flame, TrendingUp } from 'lucide-react';
 import { Brand } from '../types/Brand';
 
 interface BrandCardProps {
   brand: Brand;
+  onWebsiteClick?: (brandId: string) => void;
 }
 
-const BrandCard: React.FC<BrandCardProps> = ({ brand }) => {
+const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const getPricePointColor = (pricePoint: string) => {
@@ -36,6 +37,12 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand }) => {
     return count.toString();
   };
 
+  const handleWebsiteClick = () => {
+    if (onWebsiteClick) {
+      onWebsiteClick(brand.id);
+    }
+    window.open(`https://${brand.website}`, '_blank', 'noopener,noreferrer');
+  };
   return (
     <div className="bg-white hover:bg-gray-50 transition-colors duration-150">
       {/* Compact Main Row */}
@@ -56,6 +63,12 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand }) => {
             {brand.isNew && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
                 New
+              </span>
+            )}
+            {brand.analytics && brand.analytics.hotScore > 75 && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                <Flame className="h-2.5 w-2.5 mr-0.5" />
+                Hot
               </span>
             )}
           </div>
@@ -88,11 +101,24 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand }) => {
           </div>
         </div>
         
+        {/* Hot Score */}
+        {brand.analytics && (
+          <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2">
+            <div className="flex items-center space-x-1">
+              <Flame className="h-3 w-3 text-red-500" />
+              <span className="text-xs font-medium text-gray-700">{brand.analytics.hotScore.toFixed(0)}</span>
+            </div>
+          </div>
+        )}
+        
         {/* Social Metrics */}
         <div className="hidden sm:flex min-w-0 flex-1 max-w-xs px-2 items-center space-x-3 text-xs text-gray-500">
           <div className="flex items-center space-x-1">
             <Instagram className="h-3 w-3" />
             <span>{formatFollowers(brand.socialMedia.instagram)}</span>
+            {brand.analytics && brand.analytics.instagramGrowthWoW > 0 && (
+              <TrendingUp className="h-2.5 w-2.5 text-green-500" />
+            )}
           </div>
           <div className="flex items-center space-x-1">
             <Twitter className="h-3 w-3" />
@@ -102,15 +128,13 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand }) => {
         
         {/* Actions */}
         <div className="flex items-center space-x-1 ml-2">
-          <a 
-            href={`https://${brand.website}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={handleWebsiteClick}
             className="flex items-center space-x-1 text-emerald-600 hover:text-emerald-700 text-xs font-medium px-2 py-1 rounded hover:bg-emerald-50 transition-colors"
           >
             <ExternalLink className="h-3 w-3" />
             <span className="hidden sm:inline">Visit</span>
-          </a>
+          </button>
           
           <button
             onClick={() => setShowDetails(!showDetails)}
@@ -161,6 +185,38 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand }) => {
               </div>
             </div>
           </div>
+          
+          {/* Analytics Data */}
+          {brand.analytics && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                <Flame className="h-3 w-3 mr-1 text-red-600" />
+                Hot Score Analytics
+              </h4>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                <div className="bg-white p-2 rounded border">
+                  <div className="text-gray-500">Website Clicks</div>
+                  <div className="font-medium text-gray-900">{brand.analytics.websiteClicks.toLocaleString()}</div>
+                </div>
+                <div className="bg-white p-2 rounded border">
+                  <div className="text-gray-500">IG Growth WoW</div>
+                  <div className="font-medium text-gray-900">
+                    {brand.analytics.instagramGrowthWoW > 0 ? '+' : ''}{brand.analytics.instagramGrowthWoW.toFixed(1)}%
+                  </div>
+                </div>
+                <div className="bg-white p-2 rounded border">
+                  <div className="text-gray-500">Hot Score</div>
+                  <div className="font-medium text-gray-900">{brand.analytics.hotScore.toFixed(1)}</div>
+                </div>
+                <div className="bg-white p-2 rounded border">
+                  <div className="text-gray-500">Last Updated</div>
+                  <div className="font-medium text-gray-900">
+                    {new Date(brand.analytics.lastUpdated).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* Additional Info */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-3 pt-3 border-t border-gray-200">

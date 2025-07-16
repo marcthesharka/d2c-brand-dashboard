@@ -24,6 +24,13 @@ export interface Brand {
   isNew?: boolean;
   createdAt?: string;
   updatedAt?: string;
+  analytics?: {
+    websiteClicks: number;
+    instagramFollowersLastWeek: number;
+    instagramGrowthWoW: number;
+    hotScore: number;
+    lastUpdated: string;
+  };
 }
 
 export interface BrandFilters {
@@ -32,7 +39,7 @@ export interface BrandFilters {
   pricePoint: string;
   launchYear: string;
   rating: number;
-  sortBy: 'name' | 'rating' | 'launchYear' | 'followers';
+  sortBy: 'name' | 'rating' | 'launchYear' | 'followers' | 'hot';
   sortOrder: 'asc' | 'desc';
 }
 

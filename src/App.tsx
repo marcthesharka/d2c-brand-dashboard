@@ -1,16 +1,26 @@
 import React, { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
 import Header from './components/Header';
+import FilterBar from './components/FilterBar';
 import BrandCard from './components/BrandCard';
 import Stats from './components/Stats';
 import Pagination from './components/Pagination';
 import AddBrandForm from './components/AddBrandForm';
 import { sampleBrands } from './data/sampleBrands';
 import { BrandFilters, PaginationInfo } from './types/Brand';
+import { analyticsService } from './services/analyticsService';
 
 function App() {
   // Always use sample data for display
-  const brands = sampleBrands;
+  const [brands, setBrands] = useState(() => {
+    // Initialize analytics data for sample brands
+    analyticsService.initializeSampleData(sampleBrands);
+    
+    // Merge sample brands with analytics data
+    return sampleBrands.map(brand => ({
+      ...brand,
+      analytics: analyticsService.getBrandAnalytics(brand.id) || undefined
+    }));
+  });
   
   const [filters, setFilters] = useState<BrandFilters>({
     search: '',
@@ -18,8 +28,8 @@ function App() {
     pricePoint: 'All',
     launchYear: 'All',
     rating: 0,
-    sortBy: 'name',
-    sortOrder: 'asc'
+    sortBy: 'hot',
+    sortOrder: 'desc'
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -62,6 +72,10 @@ function App() {
           aValue = a.socialMedia.instagram + a.socialMedia.twitter;
           bValue = b.socialMedia.instagram + b.socialMedia.twitter;
           break;
+        case 'hot':
+          aValue = a.analytics?.hotScore || 0;
+          bValue = b.analytics?.hotScore || 0;
+          break;
         default:
           aValue = a.name.toLowerCase();
           bValue = b.name.toLowerCase();
@@ -94,6 +108,18 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleWebsiteClick = (brandId: string) => {
+    analyticsService.trackWebsiteClick(brandId);
+    
+    // Update the brand's analytics in state
+    setBrands(prevBrands => 
+      prevBrands.map(brand => 
+        brand.id === brandId 
+          ? { ...brand, analytics: analyticsService.getBrandAnalytics(brandId) || undefined }
+          : brand
+      )
+    );
+  };
   const handleBrandAdded = () => {
     alert('Brand added successfully to your Supabase database!');
   };
@@ -106,36 +132,30 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
-        filters={filters}
-        setFilters={setFilters}
         totalBrands={brands.length}
         filteredCount={filteredAndSortedBrands.length}
+        onAddBrand={() => setShowAddForm(true)}
       />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <Stats brands={brands} filteredBrands={filteredAndSortedBrands} />
         
-        {/* Add Brand Button */}
-        <div className="mb-4 flex justify-end">
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="flex items-center space-x-2 bg-emerald-600 text-white px-4 py-2 rounded-md hover:bg-emerald-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add New Brand</span>
-          </button>
-        </div>
-        
         <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden">
+          <FilterBar filters={filters} setFilters={setFilters} />
+          
           {paginatedBrands.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="text-center py-12">
               <p className="text-gray-500">No brands found matching your criteria.</p>
               <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
               {paginatedBrands.map((brand) => (
-                <BrandCard key={brand.id} brand={brand} />
+                <BrandCard 
+                  key={brand.id} 
+                  brand={brand} 
+                  onWebsiteClick={handleWebsiteClick}
+                />
               ))}
             </div>
           )}

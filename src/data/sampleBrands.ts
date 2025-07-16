@@ -35,7 +35,14 @@ export const sampleBrands: Brand[] = [
       values: 'Sustainability, clean eating, holistic health, transparency in ingredients',
       painPoints: ['Lack of time for proper nutrition', 'Energy crashes', 'Difficulty getting enough greens', 'Stress management']
     },
-    isNew: true
+    isNew: true,
+    analytics: {
+      websiteClicks: 342,
+      instagramFollowersLastWeek: 43200,
+      instagramGrowthWoW: 4.2,
+      hotScore: 78.5,
+      lastUpdated: '2025-01-15T10:30:00Z'
+    }
   },
   {
     id: '2',
