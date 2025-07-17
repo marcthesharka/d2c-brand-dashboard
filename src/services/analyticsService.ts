@@ -68,19 +68,11 @@ class AnalyticsService {
     this.saveAnalyticsData(analytics);
   }
 
-  // Calculate hot score based on website clicks and Instagram growth
+  // Calculate hot score based only on Instagram growth
   calculateHotScore(analytics: AnalyticsData): number {
-    // Normalize website clicks (assuming 100 clicks = 50 points max)
-    const clickScore = Math.min((analytics.websiteClicks / 100) * 50, 50);
-    
     // Normalize Instagram growth (10% growth = 50 points max)
     const growthScore = Math.min((analytics.instagramGrowthWoW / 10) * 50, 50);
-    
-    // Combine scores with time decay (recent activity weighted more)
-    const daysSinceUpdate = (Date.now() - new Date(analytics.lastUpdated).getTime()) / (1000 * 60 * 60 * 24);
-    const timeDecay = Math.max(0.1, 1 - (daysSinceUpdate / 30)); // Decay over 30 days
-    
-    return (clickScore + growthScore) * timeDecay;
+    return growthScore;
   }
 
   // Create default analytics object
