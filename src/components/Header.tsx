@@ -38,11 +38,8 @@ const Header: React.FC<HeaderProps> = ({ totalBrands, filteredCount, onAddBrand 
               <circle cx="10" cy="12" r="1" fill="#4285F4" />
               <circle cx="20" cy="22" r="1.1" fill="#34A853" />
             </svg>
-            <div>
+            <div className="flex flex-col items-center justify-center">
               <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>Bodega</h1>
-              <p className="text-xs text-gray-500 leading-tight font-serif" style={{ fontFamily: 'Playfair Display, serif' }}>
-                Showing {filteredCount} of {totalBrands} brands
-              </p>
             </div>
           </div>
           
