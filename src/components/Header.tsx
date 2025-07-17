@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ totalBrands, filteredCount, onAddBrand 
               <path d="M16 4C10 12 4 20 16 28C28 20 22 12 16 4Z" stroke="black" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             <div>
-              <h1 className="text-2xl font-serif font-bold text-gray-900" style={{ fontFamily: 'Playfair Display, serif' }}>Sana</h1>
+              <h1 className="text-2xl font-serif font-bold text-gray-900">Bodega Sana</h1>
               <p className="text-xs text-gray-500 leading-tight font-serif" style={{ fontFamily: 'Playfair Display, serif' }}>
                 Showing {filteredCount} of {totalBrands} brands
               </p>
@@ -38,8 +38,8 @@ const Header: React.FC<HeaderProps> = ({ totalBrands, filteredCount, onAddBrand 
       </div>
       {/* Elegant description below header */}
       <div className="w-full text-center mt-2 mb-4">
-        <p className="italic text-gray-600 text-xl font-serif tracking-wide" style={{ fontFamily: 'Playfair Display, serif' }}>
-          <span className="not-italic font-bold">Sana</span> (Latin for “healthy”) — Discover the brands that fuel a good life with the right nutrition.
+        <p className="italic text-gray-600 text-base font-serif tracking-wide">
+          <span className="not-italic font-bold">Bodega Sana</span> (Latin for “healthy”) — Discover the brands that fuel a good life with the right nutrition.
         </p>
       </div>
     </header>
