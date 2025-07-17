@@ -67,7 +67,11 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
         {/* Brand Name & New Badge */}
         <div className="min-w-0 flex-1 max-w-xs">
           <div className="flex items-center space-x-2">
-            <h3 className="font-medium text-gray-900 truncate text-sm">{brand.name}</h3>
+            <h3 className="font-medium text-gray-900 truncate text-sm">{brand.name}
+              {brand.analytics && brand.analytics.hotScore > 75 && (
+                <span title="Hot brand" className="ml-1 align-middle" style={{ fontSize: '1em' }}>🔥</span>
+              )}
+            </h3>
             {/*
             {isNewBrand() && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-700">
