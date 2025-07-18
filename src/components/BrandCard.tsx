@@ -68,6 +68,9 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
         <div className="min-w-0 flex-1 max-w-xs">
           <div className="flex items-center space-x-2">
             <h3 className="font-medium text-gray-900 truncate text-sm">{brand.name}
+              {isNewBrand() && (
+                <span title="New brand" className="ml-1 align-middle" style={{ fontSize: '1em' }}>🌱</span>
+              )}
               {brand.analytics && brand.analytics.hotScore > 75 && (
                 <span title="Hot brand" className="ml-1 align-middle" style={{ fontSize: '1em' }}>🔥</span>
               )}

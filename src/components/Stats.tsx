@@ -36,50 +36,56 @@ const Stats: React.FC<StatsProps> = ({ brands, filteredBrands }) => {
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <TrendingUp className="h-6 w-6 text-emerald-600" />
-          </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-500">New Brands (30 days)</p>
-            <p className="text-2xl font-semibold text-gray-900">{newBrandsCount}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <Star className="h-6 w-6 text-yellow-500" />
-          </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-500">Avg Rating</p>
-            <p className="text-2xl font-semibold text-gray-900">{avgRating}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <Flame className="h-6 w-6 text-red-500" />
-          </div>
-          <div className="ml-3">
-            <p className="text-sm font-medium text-gray-500">Hot Brands</p>
-            <p className="text-2xl font-semibold text-gray-900">{hotBrandsCount}</p>
-          </div>
-        </div>
-      </div>
-
+      {/* Total Brands */}
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <div className="flex items-center">
           <div className="flex-shrink-0">
             <Users className="h-6 w-6 text-blue-500" />
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-gray-500">Total Followers</p>
-            <p className="text-2xl font-semibold text-gray-900">{formatNumber(totalFollowers)}</p>
+            <p className="text-sm font-medium text-gray-500">Total Brands <span title="Total Brands">💯</span></p>
+            <p className="text-2xl font-semibold text-gray-900">{filteredBrands.length}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* New Brands */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <TrendingUp className="h-6 w-6 text-emerald-600" />
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-500">
+              New Brands (30 days) <span title="New Brands">🌱</span>
+            </p>
+            <p className="text-2xl font-semibold text-gray-900">{newBrandsCount}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Hot Brands */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <Flame className="h-6 w-6 text-red-500" />
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-500">Hot Brands <span title="Hot Brands">🔥</span></p>
+            <p className="text-2xl font-semibold text-gray-900">{hotBrandsCount}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Avg Rating */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <Star className="h-6 w-6 text-yellow-500" />
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-500">Avg Rating <span title="Average Rating">⭐</span></p>
+            <p className="text-2xl font-semibold text-gray-900">{avgRating}</p>
           </div>
         </div>
       </div>
