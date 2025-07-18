@@ -251,9 +251,9 @@ const App: React.FC = () => {
                   <div className="w-8 mr-3"></div>
                   <div className="min-w-0 flex-1 max-w-xs">Brand</div>
                   <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Category</div>
-                  <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2 text-center flex justify-center items-center">Price</div>
-                  <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2 text-center flex justify-center items-center">Year Est.</div>
-                  <div className="min-w-0 flex-1 max-w-xs px-2 text-center flex justify-center items-center">Hot Score</div>
+                  <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2">Price</div>
+                  <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2">Year Est.</div>
+                  <div className="min-w-0 flex-1 max-w-xs px-2">Hot Score</div>
                   <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Social</div>
                   <div className="w-24">Actions</div>
                 </div>
