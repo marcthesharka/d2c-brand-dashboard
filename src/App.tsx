@@ -37,21 +37,28 @@ const App: React.FC = () => {
       // Fallback: find max followers for normalization
       const maxFollowers = brandsData.reduce((max, b) => Math.max(max, b.socialMedia.instagram || 0), 0);
 
-      // Calculate hotScore for each brand
+      const growthWeight = 0.7;
+      const scaleWeight = 0.3;
+
       const brandsWithAnalytics = brandsData.map(brand => {
-        let hotScore = 0;
+        // Normalize growth
+        let normalizedGrowth = 0;
         if (brand.instagram_growth_7d !== undefined && brand.instagram_growth_7d !== null) {
-          hotScore = Math.min((brand.instagram_growth_7d / 10) * 100, 100);
-        } else if (maxFollowers > 0) {
-          hotScore = (brand.socialMedia.instagram / maxFollowers) * 100;
+          normalizedGrowth = Math.min((brand.instagram_growth_7d / 10) * 100, 100);
         }
+        // Normalize followers
+        const normalizedFollowers = maxFollowers > 0 ? (brand.socialMedia.instagram / maxFollowers) * 100 : 0;
+
+        // Weighted hot score
+        const hotScore = (growthWeight * normalizedGrowth) + (scaleWeight * normalizedFollowers);
+
         return {
           ...brand,
           analytics: {
             websiteClicks: 0,
             instagramFollowersLastWeek: 0,
             instagramGrowthWoW: brand.instagram_growth_7d ?? 0,
-            hotScore: hotScore,
+            hotScore,
             lastUpdated: brand.updatedAt || new Date().toISOString(),
           }
         };
