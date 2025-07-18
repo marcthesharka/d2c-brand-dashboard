@@ -113,7 +113,7 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
         {/* Hot Score */}
         <div className="min-w-0 flex-1 max-w-xs px-2 flex justify-center items-center text-center">
           <div className="flex items-center space-x-1 justify-center">
-            <span role="img" aria-label="Hot Score" style={{ fontSize: '1em' }}>🔥</span>
+            <Flame className="h-3 w-3 text-red-500" />
             <span className="text-xs font-medium text-gray-700">
               {brand.analytics ? brand.analytics.hotScore.toFixed(0) : '--'}
             </span>
