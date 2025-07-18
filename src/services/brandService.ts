@@ -33,7 +33,7 @@ export class BrandService {
 
     const { data, error } = await supabase
       .from('brands')
-      .select('*')
+      .select('*, instagram_growth_7d')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -135,7 +135,8 @@ export class BrandService {
       ingredients: dbBrand.ingredients || [],
       targetAudience: dbBrand.target_audience,
       createdAt: dbBrand.created_at,
-      updatedAt: dbBrand.updated_at
+      updatedAt: dbBrand.updated_at,
+      instagram_growth_7d: dbBrand.instagram_growth_7d
     };
   }
 

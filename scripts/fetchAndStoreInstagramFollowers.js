@@ -12,15 +12,27 @@ async function fetchInstagramFollowers(handle) {
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: 'networkidle2' });
 
-  // Instagram changes their HTML often; this selector may need updating
-  const followers = await page.evaluate(() => {
-    const el = document.querySelector('header section ul li span');
-    if (!el) return null;
-    // Instagram sometimes uses 1,234 or 1.2k format
-    let text = el.getAttribute('title') || el.innerText;
-    text = text.replace(/,/g, '').replace(/k/i, '000').replace(/m/i, '000000');
-    return parseInt(text, 10);
-  });
+  // Extract followers from og:description meta tag
+  const ogDescription = await page.$eval(
+    'meta[property="og:description"]',
+    el => el.getAttribute('content')
+  );
+
+  // ogDescription will be something like "19K Followers, 688 Following, 310 Posts - ..."
+  let followers = null;
+  if (ogDescription) {
+    const match = ogDescription.match(/^([\d.,KkMm]+)\s*Followers/);
+    if (match) {
+      const raw = match[1].toUpperCase();
+      if (raw.endsWith('K')) {
+        followers = Math.round(parseFloat(raw) * 1000);
+      } else if (raw.endsWith('M')) {
+        followers = Math.round(parseFloat(raw) * 1000000);
+      } else {
+        followers = parseInt(raw.replace(/,/g, ''), 10);
+      }
+    }
+  }
 
   await browser.close();
   return followers;

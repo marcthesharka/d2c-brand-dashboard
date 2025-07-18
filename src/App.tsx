@@ -33,16 +33,30 @@ const App: React.FC = () => {
       setLoading(true);
       setError(null);
       const brandsData = await brandService.getAllBrands();
-      
-      // Initialize analytics for demo purposes
-      analyticsService.initializeSampleData(brandsData);
-      
-      // Add analytics data to brands
-      const brandsWithAnalytics = brandsData.map(brand => ({
-        ...brand,
-        analytics: analyticsService.getBrandAnalytics(brand.id)
-      }));
-      
+
+      // Fallback: find max followers for normalization
+      const maxFollowers = brandsData.reduce((max, b) => Math.max(max, b.socialMedia.instagram || 0), 0);
+
+      // Calculate hotScore for each brand
+      const brandsWithAnalytics = brandsData.map(brand => {
+        let hotScore = 0;
+        if (brand.instagram_growth_7d !== undefined && brand.instagram_growth_7d !== null) {
+          hotScore = Math.min((brand.instagram_growth_7d / 10) * 100, 100);
+        } else if (maxFollowers > 0) {
+          hotScore = (brand.socialMedia.instagram / maxFollowers) * 100;
+        }
+        return {
+          ...brand,
+          analytics: {
+            websiteClicks: 0,
+            instagramFollowersLastWeek: 0,
+            instagramGrowthWoW: brand.instagram_growth_7d ?? 0,
+            hotScore: hotScore,
+            lastUpdated: brand.updatedAt || new Date().toISOString(),
+          }
+        };
+      });
+
       setBrands(brandsWithAnalytics);
     } catch (err) {
       console.error('Error loading brands:', err);

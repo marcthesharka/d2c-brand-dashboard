@@ -71,7 +71,7 @@ class AnalyticsService {
   // Calculate hot score based only on Instagram growth
   calculateHotScore(analytics: AnalyticsData): number {
     // Normalize Instagram growth (10% growth = 50 points max)
-    const growthScore = Math.min((analytics.instagramGrowthWoW / 10) * 50, 50);
+    const growthScore = Math.min((analytics.instagramGrowthWoW / 10) * 100, 100);
     return growthScore;
   }
 
