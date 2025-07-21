@@ -58,16 +58,19 @@ const App: React.FC = () => {
             lastUpdated: brand.updatedAt || new Date().toISOString(),
           };
         } else {
-          // Use sample analytics and add recency bonus
-          const sample = analyticsService.generateSampleAnalytics(brand.id, brand.socialMedia.instagram);
-          const currentYear = new Date().getFullYear();
+          // Fallback: hot score based on recency and followers only (no randomness)
           const recencyWeight = 0.4;
+          const followersWeight = 0.6;
+          const currentYear = new Date().getFullYear();
           const yearsSinceLaunch = currentYear - (brand.launchYear || currentYear);
           const maxYears = 10;
-          const recencyBonus = Math.max(0, (1 - yearsSinceLaunch / maxYears)) * 100 * recencyWeight;
-          hotScore = Math.min(sample.hotScore + recencyBonus, 100);
+          const recencyScore = Math.max(0, (1 - yearsSinceLaunch / maxYears)) * 100;
+          normalizedFollowers = maxFollowers > 0 ? (brand.socialMedia.instagram / maxFollowers) * 100 : 0;
+          hotScore = Math.max((recencyWeight * recencyScore) + (followersWeight * normalizedFollowers), 0);
           analyticsObj = {
-            ...sample,
+            websiteClicks: 0,
+            instagramFollowersLastWeek: 0,
+            instagramGrowthWoW: 0,
             hotScore,
             lastUpdated: brand.updatedAt || new Date().toISOString(),
           };
