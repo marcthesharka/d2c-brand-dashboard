@@ -100,7 +100,7 @@ class AnalyticsService {
       lastUpdated: new Date().toISOString()
     };
     
-    analytics.hotScore = this.calculateHotScore(analytics);
+    analytics.hotScore = Math.max(this.calculateHotScore(analytics), 0);
     return analytics;
   }
 
