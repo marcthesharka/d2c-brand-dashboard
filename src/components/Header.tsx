@@ -57,9 +57,9 @@ const Header: React.FC<HeaderProps> = ({ totalBrands, filteredCount, onAddBrand 
       <div className="w-full text-center mt-2 mb-4">
         <div className="text-gray-600 text-base tracking-wide" style={{ fontFamily: 'Inter, Arial, sans-serif', fontWeight: 400, lineHeight: 1.6 }}>
           <div className="mb-1">Every day, a new consumer brand is launched somewhere in the world.</div>
-          <div className="mb-1">We keep tabs of the best ones.</div>
+          <div className="mb-1">They're kinda dope & quirky, and we keep tabs of the best ones.</div>
           <div className="font-semibold text-gray-800" style={{ fontWeight: 600 }}>
-            We'll curate - you just browse.
+            We curate, you browse.
           </div>
         </div>
       </div>
