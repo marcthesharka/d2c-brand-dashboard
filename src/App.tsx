@@ -58,11 +58,17 @@ const App: React.FC = () => {
             lastUpdated: brand.updatedAt || new Date().toISOString(),
           };
         } else {
-          // Use sample analytics
+          // Use sample analytics and add recency bonus
           const sample = analyticsService.generateSampleAnalytics(brand.id, brand.socialMedia.instagram);
-          hotScore = sample.hotScore;
+          const currentYear = new Date().getFullYear();
+          const recencyWeight = 0.4;
+          const yearsSinceLaunch = currentYear - (brand.launchYear || currentYear);
+          const maxYears = 10;
+          const recencyBonus = Math.max(0, (1 - yearsSinceLaunch / maxYears)) * 100 * recencyWeight;
+          hotScore = Math.min(sample.hotScore + recencyBonus, 100);
           analyticsObj = {
             ...sample,
+            hotScore,
             lastUpdated: brand.updatedAt || new Date().toISOString(),
           };
         }
