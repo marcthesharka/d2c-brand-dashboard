@@ -41,26 +41,34 @@ const App: React.FC = () => {
       const scaleWeight = 0.3;
 
       const brandsWithAnalytics = brandsData.map(brand => {
-        // Normalize growth
+        let hotScore = 0;
         let normalizedGrowth = 0;
+        let normalizedFollowers = 0;
+        let analyticsObj = null;
         if (brand.instagram_growth_7d !== undefined && brand.instagram_growth_7d !== null) {
+          // Use real 7d growth
           normalizedGrowth = Math.min((brand.instagram_growth_7d / 10) * 100, 100);
-        }
-        // Normalize followers
-        const normalizedFollowers = maxFollowers > 0 ? (brand.socialMedia.instagram / maxFollowers) * 100 : 0;
-
-        // Weighted hot score
-        const hotScore = (growthWeight * normalizedGrowth) + (scaleWeight * normalizedFollowers);
-
-        return {
-          ...brand,
-          analytics: {
+          normalizedFollowers = maxFollowers > 0 ? (brand.socialMedia.instagram / maxFollowers) * 100 : 0;
+          hotScore = (growthWeight * normalizedGrowth) + (scaleWeight * normalizedFollowers);
+          analyticsObj = {
             websiteClicks: 0,
             instagramFollowersLastWeek: 0,
             instagramGrowthWoW: brand.instagram_growth_7d ?? 0,
             hotScore,
             lastUpdated: brand.updatedAt || new Date().toISOString(),
-          }
+          };
+        } else {
+          // Use sample analytics
+          const sample = analyticsService.generateSampleAnalytics(brand.id, brand.socialMedia.instagram);
+          hotScore = sample.hotScore;
+          analyticsObj = {
+            ...sample,
+            lastUpdated: brand.updatedAt || new Date().toISOString(),
+          };
+        }
+        return {
+          ...brand,
+          analytics: analyticsObj
         };
       });
 
