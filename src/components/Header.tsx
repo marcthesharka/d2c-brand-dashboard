@@ -55,9 +55,13 @@ const Header: React.FC<HeaderProps> = ({ totalBrands, filteredCount, onAddBrand 
       </div>
       {/* Elegant description below header */}
       <div className="w-full text-center mt-2 mb-4">
-        <p className="italic text-gray-600 text-base tracking-wide" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>
-          Discover the right products to fuel your lifestyle
-        </p>
+        <div className="text-gray-600 text-base tracking-wide" style={{ fontFamily: 'Inter, Arial, sans-serif', fontWeight: 400, lineHeight: 1.6 }}>
+          <div className="mb-1">Every day, a new consumer brand is launched somewhere in the world.</div>
+          <div className="mb-1">We keep tabs of it all.</div>
+          <div className="font-semibold text-gray-800" style={{ fontWeight: 600 }}>
+            Browse Bodega to discover the right ones for you.
+          </div>
+        </div>
       </div>
     </header>
   );
