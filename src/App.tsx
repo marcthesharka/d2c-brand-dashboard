@@ -5,6 +5,7 @@ import BrandCard from './components/BrandCard';
 import Stats from './components/Stats';
 import Pagination from './components/Pagination';
 import AddBrandForm from './components/AddBrandForm';
+import Footer from './components/Footer';
 import { Brand, PaginationInfo } from './types/Brand';
 import { brandService } from './services/brandService';
 import { analyticsService } from './services/analyticsService';
@@ -228,81 +229,84 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header 
-        totalBrands={brands.length} 
-        filteredCount={filteredBrands.length} 
-        onAddBrand={() => setShowAddForm(true)} 
-      />
-      
-      <FilterBar
-        filters={filters}
-        onFiltersChange={setFilters}
-        totalBrands={brands.length}
-        filteredCount={filteredBrands.length}
-      />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Stats brands={brands} filteredBrands={filteredBrands} />
+    <>
+      <div className="min-h-screen bg-gray-50">
+        <Header 
+          totalBrands={brands.length} 
+          filteredCount={filteredBrands.length} 
+          onAddBrand={() => setShowAddForm(true)} 
+        />
         
-        {filteredBrands.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg mb-4">
-              {brands.length === 0 ? 'No brands found in database' : 'No brands match your current filters'}
-            </p>
-            {brands.length === 0 && (
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-              >
-                Add Your First Brand
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              {/* Table Header */}
-              <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                <div className="flex items-center text-xs font-medium text-gray-500 uppercase tracking-wide">
-                  <div className="w-8 mr-3"></div>
-                  <div className="min-w-0 flex-1 max-w-xs">Brand</div>
-                  <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Category</div>
-                  <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2">Price</div>
-                  <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2">Year Est.</div>
-                  <div className="min-w-0 flex-1 max-w-xs px-2">Hot Score</div>
-                  <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Social</div>
-                  <div className="w-24">Actions</div>
+        <FilterBar
+          filters={filters}
+          onFiltersChange={setFilters}
+          totalBrands={brands.length}
+          filteredCount={filteredBrands.length}
+        />
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <Stats brands={brands} filteredBrands={filteredBrands} />
+          
+          {filteredBrands.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg mb-4">
+                {brands.length === 0 ? 'No brands found in database' : 'No brands match your current filters'}
+              </p>
+              {brands.length === 0 && (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                >
+                  Add Your First Brand
+                </button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                {/* Table Header */}
+                <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                  <div className="flex items-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                    <div className="w-8 mr-3"></div>
+                    <div className="min-w-0 flex-1 max-w-xs">Brand</div>
+                    <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Category</div>
+                    <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2">Price</div>
+                    <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2">Year Est.</div>
+                    <div className="min-w-0 flex-1 max-w-xs px-2">Hot Score</div>
+                    <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Social</div>
+                    <div className="w-24">Actions</div>
+                  </div>
+                </div>
+                
+                {/* Brand List */}
+                <div className="divide-y divide-gray-200">
+                  {paginatedBrands.map((brand) => (
+                    <BrandCard 
+                      key={brand.id} 
+                      brand={brand} 
+                      onWebsiteClick={handleWebsiteClick}
+                    />
+                  ))}
                 </div>
               </div>
               
-              {/* Brand List */}
-              <div className="divide-y divide-gray-200">
-                {paginatedBrands.map((brand) => (
-                  <BrandCard 
-                    key={brand.id} 
-                    brand={brand} 
-                    onWebsiteClick={handleWebsiteClick}
-                  />
-                ))}
-              </div>
-            </div>
-            
-            <Pagination 
-              pagination={pagination}
-              onPageChange={setCurrentPage}
-            />
-          </>
-        )}
-      </main>
+              <Pagination 
+                pagination={pagination}
+                onPageChange={setCurrentPage}
+              />
+            </>
+          )}
+        </main>
 
-      {showAddForm && (
-        <AddBrandForm
-          onClose={() => setShowAddForm(false)}
-          onBrandAdded={handleBrandAdded}
-        />
-      )}
-    </div>
+        {showAddForm && (
+          <AddBrandForm
+            onClose={() => setShowAddForm(false)}
+            onBrandAdded={handleBrandAdded}
+          />
+        )}
+      </div>
+      <Footer />
+    </>
   );
 };
 

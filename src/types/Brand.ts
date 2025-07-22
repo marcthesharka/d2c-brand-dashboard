@@ -25,6 +25,7 @@ export interface Brand {
   updatedAt: string;
   analytics?: AnalyticsData;
   instagram_growth_7d?: number;
+  affiliate_url?: string;
 }
 
 export interface AnalyticsData {

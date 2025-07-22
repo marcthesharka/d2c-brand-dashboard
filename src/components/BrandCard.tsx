@@ -41,7 +41,12 @@ const BrandCard: React.FC<BrandCardProps> = ({ brand, onWebsiteClick }) => {
     if (onWebsiteClick) {
       onWebsiteClick(brand.id);
     }
-    window.open(`https://${brand.website}`, '_blank', 'noopener,noreferrer');
+    const url = brand.affiliate_url || brand.website;
+    // Ensure the URL has a protocol
+    const prefixedUrl = url && !/^https?:\/\//i.test(url) ? `https://${url}` : url;
+    if (prefixedUrl) {
+      window.open(prefixedUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   // Calculate if brand is new (within past 30 days)
