@@ -43,13 +43,20 @@ const Header: React.FC<HeaderProps> = ({ totalBrands, filteredCount, onAddBrand 
             </div>
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center flex-col">
             <button
               onClick={onAddBrand}
               className="ml-auto px-3 py-1.5 border border-gray-300 text-gray-700 rounded hover:bg-gray-100 text-xs font-medium transition-colors"
             >
               Missed one? Suggest a brand to us
             </button>
+            <a
+              href="/learn"
+              className="mt-1 text-xs text-emerald-600 hover:underline"
+              style={{ fontWeight: 400 }}
+            >
+              Learn What We're Eating & Drinking
+            </a>
           </div>
         </div>
       </div>
