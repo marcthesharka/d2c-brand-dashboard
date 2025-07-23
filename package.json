@@ -1,0 +1,8 @@
+{
+  "name": "d2c-brand-dashboard",
+  "private": true,
+  "workspaces": [
+    "apps/main-app",
+    "apps/learn"
+  ]
+}

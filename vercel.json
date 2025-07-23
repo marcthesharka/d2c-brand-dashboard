@@ -1,6 +1,10 @@
 {
-    "rewrites": [
-      { "source": "/learn(/.*)?", "destination": "/apps/learn$1" },
-      { "source": "/(.*)", "destination": "/apps/main-app/$1" }
-    ]
-  }
+  "rewrites": [
+    { "source": "/learn(/.*)?", "destination": "/apps/learn$1" },
+    { "source": "/(.*)", "destination": "/apps/main-app/$1" }
+  ],
+  "builds": [
+    { "src": "apps/main-app/package.json", "use": "@vercel/static-build", "config": { "distDir": "apps/main-app/dist" } },
+    { "src": "apps/learn/package.json", "use": "@vercel/static-build", "config": { "distDir": "apps/learn/.next" } }
+  ]
+}
