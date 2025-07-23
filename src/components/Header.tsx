@@ -39,7 +39,7 @@ const Header: React.FC<HeaderProps> = ({ totalBrands, filteredCount, onAddBrand 
               <circle cx="20" cy="22" r="1.1" fill="#34A853" />
             </svg>
             <div className="flex flex-col items-center justify-center">
-              <h1 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'Inter, Arial, sans-serif' }}>Bodega</h1>
+              <a href="/" className="text-2xl font-bold text-gray-900 hover:text-emerald-600 transition-colors" style={{ fontFamily: 'Inter, Arial, sans-serif', textDecoration: 'none' }}>Bodega</a>
             </div>
           </div>
           
