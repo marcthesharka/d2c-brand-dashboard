@@ -1,2 +1,7 @@
+restore-to-vercel-deploy
+node_modules/
+.next/
+dist/
 node_modules
+main
 .DS_Store
