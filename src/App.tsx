@@ -9,6 +9,37 @@ import Footer from './components/Footer';
 import { Brand, PaginationInfo } from './types/Brand';
 import { brandService } from './services/brandService';
 import { analyticsService } from './services/analyticsService';
+import { Routes, Route } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+
+// Placeholder LearnIndex component
+const LearnIndex: React.FC = () => (
+  <div className="max-w-2xl mx-auto py-12">
+    <Helmet>
+      <title>Learn | Bodega</title>
+      <meta name="description" content="Discover guides, tips, and insights on launching and growing D2C food & beverage brands." />
+    </Helmet>
+    <h1 className="text-2xl font-bold mb-4">Learn</h1>
+    <ul>
+      <li>
+        <a href="/learn/test-article" className="text-emerald-600 hover:underline">How to Launch a D2C Food Brand (Test Article)</a>
+      </li>
+    </ul>
+  </div>
+);
+
+// Placeholder LearnArticle component
+const LearnArticle: React.FC = () => (
+  <div className="max-w-2xl mx-auto py-12">
+    <Helmet>
+      <title>How to Launch a D2C Food Brand | Bodega</title>
+      <meta name="description" content="A sample article for the Bodega learn section. Learn how to launch a D2C food brand and more." />
+    </Helmet>
+    <h1 className="text-2xl font-bold mb-4">How to Launch a D2C Food Brand (Test Article)</h1>
+    <p className="mb-4 text-gray-700">This is a sample article for the new /learn section. Here you can write long-form content, guides, and SEO-focused posts to drive traffic to your site.</p>
+    <p className="text-gray-500">(Replace this with real content and dynamic article loading in the future.)</p>
+  </div>
+);
 
 const ITEMS_PER_PAGE = 20;
 
@@ -230,81 +261,81 @@ const App: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
-        <Header 
-          totalBrands={brands.length} 
-          filteredCount={filteredBrands.length} 
-          onAddBrand={() => setShowAddForm(true)} 
-        />
-        
-        <FilterBar
-          filters={filters}
-          onFiltersChange={setFilters}
-          totalBrands={brands.length}
-          filteredCount={filteredBrands.length}
-        />
-
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Stats brands={brands} filteredBrands={filteredBrands} />
-          
-          {filteredBrands.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg mb-4">
-                {brands.length === 0 ? 'No brands found in database' : 'No brands match your current filters'}
-              </p>
-              {brands.length === 0 && (
-                <button
-                  onClick={() => setShowAddForm(true)}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
-                >
-                  Add Your First Brand
-                </button>
-              )}
-            </div>
-          ) : (
-            <>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                {/* Table Header */}
-                <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
-                  <div className="flex items-center text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    <div className="w-8 mr-3"></div>
-                    <div className="min-w-0 flex-1 max-w-xs">Brand</div>
-                    <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Category</div>
-                    <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2">Price</div>
-                    <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2">Year Est.</div>
-                    <div className="min-w-0 flex-1 max-w-xs px-2">Hot Score</div>
-                    <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Social</div>
-                    <div className="w-24">Actions</div>
+      <Routes>
+        <Route path="/learn" element={<LearnIndex />} />
+        <Route path="/learn/:slug" element={<LearnArticle />} />
+        <Route path="/" element={
+          <div className="min-h-screen bg-gray-50">
+            <Header 
+              totalBrands={brands.length} 
+              filteredCount={filteredBrands.length} 
+              onAddBrand={() => setShowAddForm(true)} 
+            />
+            <FilterBar
+              filters={filters}
+              onFiltersChange={setFilters}
+              totalBrands={brands.length}
+              filteredCount={filteredBrands.length}
+            />
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <Stats brands={brands} filteredBrands={filteredBrands} />
+              {filteredBrands.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 text-lg mb-4">
+                    {brands.length === 0 ? 'No brands found in database' : 'No brands match your current filters'}
+                  </p>
+                  {brands.length === 0 && (
+                    <button
+                      onClick={() => setShowAddForm(true)}
+                      className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors"
+                    >
+                      Add Your First Brand
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    {/* Table Header */}
+                    <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                      <div className="flex items-center text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        <div className="w-8 mr-3"></div>
+                        <div className="min-w-0 flex-1 max-w-xs">Brand</div>
+                        <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Category</div>
+                        <div className="hidden md:block min-w-0 flex-1 max-w-xs px-2">Price</div>
+                        <div className="hidden lg:block min-w-0 flex-1 max-w-xs px-2">Year Est.</div>
+                        <div className="min-w-0 flex-1 max-w-xs px-2">Hot Score</div>
+                        <div className="hidden sm:block min-w-0 flex-1 max-w-xs px-2">Social</div>
+                        <div className="w-24">Actions</div>
+                      </div>
+                    </div>
+                    {/* Brand List */}
+                    <div className="divide-y divide-gray-200">
+                      {paginatedBrands.map((brand) => (
+                        <BrandCard 
+                          key={brand.id} 
+                          brand={brand} 
+                          onWebsiteClick={handleWebsiteClick}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-                
-                {/* Brand List */}
-                <div className="divide-y divide-gray-200">
-                  {paginatedBrands.map((brand) => (
-                    <BrandCard 
-                      key={brand.id} 
-                      brand={brand} 
-                      onWebsiteClick={handleWebsiteClick}
-                    />
-                  ))}
-                </div>
-              </div>
-              
-              <Pagination 
-                pagination={pagination}
-                onPageChange={setCurrentPage}
+                  <Pagination 
+                    pagination={pagination}
+                    onPageChange={setCurrentPage}
+                  />
+                </>
+              )}
+            </main>
+            {showAddForm && (
+              <AddBrandForm
+                onClose={() => setShowAddForm(false)}
+                onBrandAdded={handleBrandAdded}
               />
-            </>
-          )}
-        </main>
-
-        {showAddForm && (
-          <AddBrandForm
-            onClose={() => setShowAddForm(false)}
-            onBrandAdded={handleBrandAdded}
-          />
-        )}
-      </div>
+            )}
+          </div>
+        } />
+      </Routes>
       <Footer />
     </>
   );
