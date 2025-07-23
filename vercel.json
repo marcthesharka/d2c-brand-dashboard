@@ -1,0 +1,6 @@
+{
+    "rewrites": [
+      { "source": "/learn(/.*)?", "destination": "/apps/learn$1" },
+      { "source": "/(.*)", "destination": "/apps/main-app/$1" }
+    ]
+  }
