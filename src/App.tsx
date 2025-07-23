@@ -21,7 +21,7 @@ const LearnIndex: React.FC = () => (
     </Helmet>
     <h1 className="text-2xl font-bold mb-4">What the moderators are eating and drinking</h1>
     <div className="flex justify-center mb-6">
-      <img src="https://media.tenor.com/2QnKQK2QnQwAAAAC/joey-chestnut-hot-dog.gif" alt="Joey Chestnut eating hot dogs" className="rounded shadow max-h-48" />
+      <img src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2N0YzdvNXd4dXNtOWtnbW04MDE1Nm9teGZtYzZzYXpucm4ydmMxcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/93lEttRMS3UpxcIvPG/giphy.gif" alt="Joey Chestnut eating hot dogs" className="rounded shadow max-h-48" />
     </div>
     <ul>
       <li>
