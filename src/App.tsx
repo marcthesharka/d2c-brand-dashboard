@@ -16,10 +16,13 @@ import { Helmet } from 'react-helmet-async';
 const LearnIndex: React.FC = () => (
   <div className="max-w-2xl mx-auto py-12">
     <Helmet>
-      <title>Learn | Bodega</title>
-      <meta name="description" content="Discover guides, tips, and insights on launching and growing D2C food & beverage brands." />
+      <title>What the moderators are eating and drinking | Bodega</title>
+      <meta name="description" content="See what the Bodega moderators are eating and drinking. Fun, curated content and guides for D2C food & beverage fans." />
     </Helmet>
-    <h1 className="text-2xl font-bold mb-4">Learn</h1>
+    <h1 className="text-2xl font-bold mb-4">What the moderators are eating and drinking</h1>
+    <div className="flex justify-center mb-6">
+      <img src="https://media.tenor.com/2QnKQK2QnQwAAAAC/joey-chestnut-hot-dog.gif" alt="Joey Chestnut eating hot dogs" className="rounded shadow max-h-48" />
+    </div>
     <ul>
       <li>
         <a href="/learn/test-article" className="text-emerald-600 hover:underline">How to Launch a D2C Food Brand (Test Article)</a>
