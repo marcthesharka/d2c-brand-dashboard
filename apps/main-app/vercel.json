@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/learn(/.*)?",
+      "destination": "https://learn.d2cbodega.com/learn$1"
+    }
+  ]
+}
